@@ -1,0 +1,9 @@
+{
+  "name": "crypto-analyzer",
+  "description": "加密货币技术分析工具，基于币安 API 自动获取数据并进行做市商视角分析",
+  "version": "1.0.0",
+  "author": {
+    "name": "Neo"
+  },
+  "repository": "https://github.com/neo/crypto-analyzer"
+}
