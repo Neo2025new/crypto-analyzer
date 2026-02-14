@@ -9,13 +9,9 @@ curl -s "https://fapi.binance.com/fapi/v1/klines?symbol={SYMBOL}USDT&interval={I
 ### 参数
 - `symbol`: 交易对（如 BTCUSDT, ETHUSDT）
 - `interval`: 时间周期
-  - 分钟级: `1m`, `3m`, `5m`, `15m`, `30m`
-  - 小时级: `1h`, `2h`, `4h`, `6h`, `8h`, `12h`
-  - 日线级: `1d`, `3d`, `1w`, `1M`
-
-  **推荐周期组合**:
-  - 短线模式: `1d` → `4h` → `1h` → `15m`
-  - 波段模式: `1w` → `1d` → `4h` → `1h`
+  - `1m`, `3m`, `5m`, `15m`, `30m`
+  - `1h`, `2h`, `4h`, `6h`, `8h`, `12h`
+  - `1d`, `3d`, `1w`, `1M`
 - `limit`: 返回数量（默认 500，最大 1500）
 
 ### 返回数据结构
@@ -187,27 +183,6 @@ curl -s "https://fapi.binance.com/fapi/v1/ticker/24hr?symbol={SYMBOL}USDT"
 
 > 振幅 > 5% 为高波动日，> 8% 为极端波动日
 
-## 周线数据（波段模式）
-
-```bash
-curl -s "https://fapi.binance.com/fapi/v1/klines?symbol={SYMBOL}USDT&interval=1w&limit=52"
-```
-
-### 用途
-- 判断大级别趋势方向
-- 识别周线级别支撑/阻力
-- 波段交易的方向指引
-
-### 周线指标解读
-
-| 指标 | 周线特点 |
-|------|---------|
-| RSI | 周线 RSI > 70 = 大级别过热；< 30 = 大级别超卖 |
-| EMA | 周线 EMA20 = 中期趋势线，站上偏多 |
-| MACD | 周线金叉/死叉 = 中期趋势转向信号 |
-
-> **注意**: 周线级别信号较少但权重大，一旦出现应优先参考。
-
 ## 注意事项
 
 1. 所有 API 为公开接口，无需认证
@@ -216,4 +191,3 @@ curl -s "https://fapi.binance.com/fapi/v1/klines?symbol={SYMBOL}USDT&interval=1w
 4. 资金费率每 8 小时结算一次
 5. 多空比和费率结合使用效果更佳
 6. 24h Ticker 适合快速获取日内高低点
-7. 周线数据建议获取 52 根（约一年）用于波段分析
