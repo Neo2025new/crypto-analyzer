@@ -14,8 +14,9 @@ Loss = max(-Change, 0)
 AvgGain = SMA(Gain, 14) 或 RMA(Gain, 14)
 AvgLoss = SMA(Loss, 14) 或 RMA(Loss, 14)
 
-RS = AvgGain / AvgLoss
-RSI = 100 - (100 / (1 + RS))
+# ⚠️ 必须防除零：AvgLoss == 0 时 RSI = 100
+RS = AvgGain / AvgLoss if AvgLoss > 0 else float('inf')
+RSI = 100 - (100 / (1 + RS)) if AvgLoss > 0 else 100
 ```
 
 ### 解读
@@ -282,7 +283,16 @@ def calculate_indicators(klines):
     ema50 = ema(closes, 50)
     ema200 = ema(closes, 200) if len(closes) >= 200 else None
 
-    # RSI
+    # RSI — ⚠️ calc_rsi 必须处理 AvgLoss=0 的情况（全涨无跌时返回 100）
+    # def calc_rsi(closes, period=14):
+    #     changes = [closes[i]-closes[i-1] for i in range(1, len(closes))]
+    #     gains = [max(c, 0) for c in changes]
+    #     losses = [max(-c, 0) for c in changes]
+    #     avg_gain = sum(gains[-period:]) / period
+    #     avg_loss = sum(losses[-period:]) / period
+    #     if avg_loss == 0: return 100.0
+    #     rs = avg_gain / avg_loss
+    #     return 100 - (100 / (1 + rs))
     rsi = calculate_rsi(closes, 14)
 
     # MACD
