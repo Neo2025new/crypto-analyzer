@@ -277,10 +277,10 @@ def calculate_indicators(klines):
     highs = [k[2] for k in klines]
     lows = [k[3] for k in klines]
 
-    # EMA
+    # EMA — 注意：数据不足时返回 None，格式化时必须做 None 检查
     ema20 = ema(closes, 20)
     ema50 = ema(closes, 50)
-    ema200 = ema(closes, 200)
+    ema200 = ema(closes, 200) if len(closes) >= 200 else None
 
     # RSI
     rsi = calculate_rsi(closes, 14)
@@ -305,10 +305,28 @@ def calculate_indicators(klines):
     return {
         'ema20': ema20[-1],
         'ema50': ema50[-1],
-        'ema200': ema200[-1],
+        'ema200': ema200[-1] if ema200 is not None else None,
         'rsi': rsi[-1],
         'macd': {'dif': dif[-1], 'dea': dea[-1], 'hist': macd_hist[-1]},
         'atr': atr[-1],
         'boll': {'upper': upper[-1], 'mid': sma20[-1], 'lower': lower[-1], 'width': bandwidth[-1]}
     }
+
+
+# ⚠️ 格式化安全规范（必须遵守）
+# 所有从 API 或计算结果获取的数值，可能为 None（数据不足/API 返回空）
+# 使用格式说明符（:.2f / :,.0f / :.1% 等）前必须确认值不为 None
+#
+# ❌ 错误写法（None 时崩溃）：
+#   f"EMA200: ${ema200:.2f}"
+#
+# ✅ 正确写法（两种方式任选）：
+#   # 方式1：三元表达式
+#   f"EMA200: {'$'+f'{ema200:.2f}' if ema200 is not None else 'N/A'}"
+#
+#   # 方式2：赋值处给默认值（推荐，代码更简洁）
+#   ema200 = result.get('ema200') or 0  # 数据不足时显示 0
+#   f"EMA200: ${ema200:.2f}"
+#
+# 适用字段：ema200、longShortRatio、fundingRate、openInterest 等所有 API 返回字段
 ```

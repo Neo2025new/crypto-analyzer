@@ -32,8 +32,8 @@ version: 1.3.0
 ### API 调用示例
 
 ```bash
-# K 线数据（合约）
-curl -s "https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=1h&limit=100"
+# K 线数据（合约）— limit 必须 ≥ 300，确保 EMA(200) 有足够数据点
+curl -s "https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=1h&limit=300"
 
 # 资金费率
 curl -s "https://fapi.binance.com/fapi/v1/fundingRate?symbol=BTCUSDT&limit=1"
@@ -51,20 +51,21 @@ curl -s "https://fapi.binance.com/futures/data/topLongShortAccountRatio?symbol=B
 
 1. **请求间隔**：每次 API 请求间隔至少 100ms
 2. **批量获取**：优先使用 `limit` 参数一次获取足够数据，避免多次请求
-3. **重试机制**：遇到错误时使用指数退避重试
+3. **数据量要求**：K 线 `limit` 必须 ≥ 300（EMA(200) 需要至少 200 根 K 线，额外 100 根作为预热缓冲）
+4. **重试机制**：遇到错误时使用指数退避重试
    - 第1次重试：等待 1s
    - 第2次重试：等待 2s
    - 第3次重试：等待 4s
    - 最多重试 3 次
-4. **错误处理**：
+5. **错误处理**：
    - HTTP 418/429：暂停请求 30s 后重试
    - JSON 解析错误：检查响应内容，可能是 HTML 错误页面
    - 超时：使用缓存数据继续分析
 
 ```bash
 # 推荐：一次获取多个周期（减少请求次数）
-# 获取 4H K 线时，limit=200 可覆盖约 33 天数据
-curl -s "https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=4h&limit=200"
+# 所有周期统一用 limit=300，确保长均线有足够数据
+curl -s "https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=4h&limit=300"
 ```
 
 ## 指标计算
