@@ -181,13 +181,13 @@ def analyze_symbol(symbol, mode="15m"):
     ticker = fetch_ticker(symbol)
     result["ticker"] = ticker
 
-    # K 线周期选择
+    # K 线周期选择 — 所有周期 limit=300（SKILL.md 规范：EMA200 需 200+100 预热）
     if mode == "15m":
-        intervals = {"1h": 300, "4h": 100}
+        intervals = {"1h": 300, "4h": 300}
     elif mode == "4h":
-        intervals = {"1h": 300, "4h": 200, "1d": 100}
+        intervals = {"1h": 300, "4h": 300, "1d": 300}
     else:  # 8h
-        intervals = {"4h": 200, "1d": 100}
+        intervals = {"4h": 300, "1d": 300}
 
     result["indicators"] = {}
     for interval, limit in intervals.items():
@@ -205,17 +205,18 @@ def analyze_symbol(symbol, mode="15m"):
         ema50 = calc_ema(closes, 50)
         ema200 = calc_ema(closes, 200)
         indicators["ema"] = {
-            "ema20": round(ema20, 2) if ema20 else None,
-            "ema50": round(ema50, 2) if ema50 else None,
-            "ema200": round(ema200, 2) if ema200 else None,
+            "ema20": round(ema20, 2) if ema20 is not None else None,
+            "ema50": round(ema50, 2) if ema50 is not None else None,
+            "ema200": round(ema200, 2) if ema200 is not None else None,
         }
 
         indicators["bollinger"] = calc_bollinger(closes)
 
-        # 支撑阻力 (简单: 近期高低点)
-        recent = closes[-20:]
-        indicators["support"] = round(min(recent), 2)
-        indicators["resistance"] = round(max(recent), 2)
+        # 支撑阻力 (近期高低点)
+        recent_lows = [k["low"] for k in klines[-20:]]
+        recent_highs = [k["high"] for k in klines[-20:]]
+        indicators["support"] = round(min(recent_lows), 2)
+        indicators["resistance"] = round(max(recent_highs), 2)
 
         result["indicators"][interval] = indicators
 
