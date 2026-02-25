@@ -1,20 +1,25 @@
 #!/usr/bin/env python3
 """
 加密货币技术分析工具
-用法: python3 analyze.py [--symbols BTCUSDT,ETHUSDT] [--mode 15m|4h|8h]
+用法: python3 analyze.py [--symbols BTCUSDT,ETHUSDT] [--mode 15m|1h|4h|8h|daily]
 输出: JSON 格式的完整分析数据
 """
 import json
 import urllib.request
 import math
+import os
 from datetime import datetime, timezone, timedelta
 
 BASE = "https://fapi.binance.com"
 SGT = timezone(timedelta(hours=8))
+BINANCE_API_KEY = os.environ.get("BINANCE_API_KEY")
 
 
 def fetch_json(url):
-    req = urllib.request.Request(url, headers={"User-Agent": "crypto-analyzer/1.0"})
+    headers = {"User-Agent": "crypto-analyzer/1.0"}
+    if BINANCE_API_KEY:
+        headers["X-MBX-APIKEY"] = BINANCE_API_KEY
+    req = urllib.request.Request(url, headers=headers)
     with urllib.request.urlopen(req, timeout=10) as resp:
         return json.loads(resp.read())
 
@@ -184,9 +189,13 @@ def analyze_symbol(symbol, mode="15m"):
     # K 线周期选择 — 所有周期 limit=300（SKILL.md 规范：EMA200 需 200+100 预热）
     if mode == "15m":
         intervals = {"1h": 300, "4h": 300}
+    elif mode == "1h":
+        intervals = {"15m": 300, "1h": 300, "4h": 300}
     elif mode == "4h":
         intervals = {"1h": 300, "4h": 300, "1d": 300}
-    else:  # 8h
+    elif mode == "daily":
+        intervals = {"4h": 300, "1d": 300, "1w": 100}
+    else:  # 8h (legacy)
         intervals = {"4h": 300, "1d": 300}
 
     result["indicators"] = {}
@@ -243,7 +252,7 @@ def main():
 
     parser = argparse.ArgumentParser(description="Crypto technical analysis")
     parser.add_argument("--symbols", default="BTCUSDT,ETHUSDT", help="Comma-separated symbols")
-    parser.add_argument("--mode", default="15m", choices=["15m", "4h", "8h"], help="Analysis mode")
+    parser.add_argument("--mode", default="15m", choices=["15m", "1h", "4h", "8h", "daily"], help="Analysis mode")
     args = parser.parse_args()
 
     symbols = [s.strip().upper() for s in args.symbols.split(",")]
